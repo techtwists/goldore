@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     const userData = req.body;
 
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('gold-ore-game');
 
     // Save user data to MongoDB
     await db.collection('players').updateOne(
