@@ -28,7 +28,7 @@ export default function Home() {
 
   const saveUserData = async (user: UserData) => {
     try {
-      const res = await fetch('./api/saveUser', {
+      const res = await fetch('../api/saveUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
