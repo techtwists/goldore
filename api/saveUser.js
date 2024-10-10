@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const db = client.db();
 
     // Save user data to MongoDB
-    await db.collection('users').updateOne(
+    await db.collection('players').updateOne(
       { id: userData.id },
       { $set: userData },
       { upsert: true }
