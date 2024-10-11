@@ -1,4 +1,3 @@
-// pages/index.tsx
 'use client'
 
 import WebApp from '@twa-dev/sdk';
@@ -14,17 +13,82 @@ interface UserData {
   is_premium?: boolean;
 }
 
-export default function Home() {
+interface Upgrade {
+  name: string;
+  level: number;
+  cost: number;
+  productionRate: number;
+  image: string;
+}
+
+interface Referral {
+  code: string;
+  referredFriends: number;
+  bonus: number;
+}
+
+export default function GoldOreGame() {
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [gold, setGold] = useState<number>(0);
+  const [passiveIncome, setPassiveIncome] = useState<number>(0);
+  const [upgrades, setUpgrades] = useState<Upgrade[]>([
+    {
+      name: 'Pickaxe',
+      level: 1,
+      cost: 10,
+      productionRate: 1,
+      image: '/images/pickaxe.png',
+    },
+    {
+      name: 'Excavator',
+      level: 0,
+      cost: 100,
+      productionRate: 10,
+      image: '/images/excavator.png',
+    },
+    {
+      name: 'Solar Panel',
+      level: 0,
+      cost: 500,
+      productionRate: 50,
+      image: '/images/solar-panel.png',
+    },
+    {
+      name: 'AI Robots',
+      level: 0,
+      cost: 1000,
+      productionRate: 100,
+      image: '/images/ai-robots.png',
+    },
+    {
+      name: 'Space Mining',
+      level: 0,
+      cost: 5000,
+      productionRate: 500,
+      image: '/images/space-mining.png',
+    },
+  ]);
+  const [referral, setReferral] = useState<Referral | null>(null);
+  const [dailyRewardClaimed, setDailyRewardClaimed] = useState<boolean>(false);
 
   useEffect(() => {
-    // Get user data from Telegram Web App SDK
+    // Get user data from Telegram Web App SDK and expand to full screen
     if (WebApp.initDataUnsafe.user) {
       const user = WebApp.initDataUnsafe.user as UserData;
       setUserData(user);
       saveUserData(user); // Save user data to MongoDB
     }
-  }, []);
+    
+    // Expand to full screen
+    WebApp.expand();
+
+    // Calculate passive income every second
+    const passiveIncomeInterval = setInterval(() => {
+      setGold((prevGold) => prevGold + passiveIncome);
+    }, 1000);
+
+    return () => clearInterval(passiveIncomeInterval);
+  }, [passiveIncome]);
 
   const saveUserData = async (user: UserData) => {
     try {
@@ -42,23 +106,155 @@ export default function Home() {
     }
   };
 
+  const mineGold = () => {
+    setGold(gold + 1);
+  };
+
+  const purchaseUpgrade = (index: number) => {
+    const upgrade = upgrades[index];
+    if (gold >= upgrade.cost) {
+      const updatedUpgrades = [...upgrades];
+      updatedUpgrades[index] = {
+        ...upgrade,
+        level: upgrade.level + 1,
+        cost: Math.floor(upgrade.cost * 1.5),
+        productionRate: Math.floor(upgrade.productionRate * 1.2),
+      };
+      setUpgrades(updatedUpgrades);
+      setGold(gold - upgrade.cost);
+      calculatePassiveIncome(updatedUpgrades);
+    }
+  };
+
+  const calculatePassiveIncome = (updatedUpgrades: Upgrade[]) => {
+    const totalPassiveIncome = updatedUpgrades.reduce(
+      (total, upgrade) => total + upgrade.productionRate * upgrade.level,
+      0
+    );
+    setPassiveIncome(totalPassiveIncome);
+  };
+
+  const claimDailyReward = () => {
+    if (!dailyRewardClaimed) {
+      setGold(gold + 100); // Reward 100 gold
+      setDailyRewardClaimed(true);
+      setTimeout(() => setDailyRewardClaimed(false), 86400000); // Reset after 24 hours
+    }
+  };
+
+  const generateReferralCode = () => {
+    setReferral({ code: 'REF123', referredFriends: 0, bonus: 0 });
+  };
+
+  const redeemReferralBonus = () => {
+    if (referral) {
+      setGold(gold + referral.bonus); // Redeem the bonus from referrals
+    }
+  };
+
   return (
-    <main className="p-4">
+    <main className="p-4 bg-gray-100 min-h-screen">
+      {/* Top area: User Info */}
       {userData ? (
-        <>
-          <h1 className="text-2xl font-bold mb-4">User Data</h1>
-          <ul>
-            <li>ID: {userData.id}</li>
-            <li>First Name: {userData.first_name}</li>
-            <li>Last Name: {userData.last_name || 'N/A'}</li>
-            <li>Username: {userData.username || 'N/A'}</li>
-            <li>Language Code: {userData.language_code}</li>
-            <li>Is Premium: {userData.is_premium ? 'Yes' : 'No'}</li>
-          </ul>
-        </>
+        <div className="user-info bg-white p-4 rounded shadow mb-4">
+          <h1 className="text-2xl font-bold">Welcome, {userData.first_name}!</h1>
+          <p className="text-gray-600">Total Gold: {gold}</p>
+          <p className="text-gray-600">Passive Income: {passiveIncome} gold/second</p>
+        </div>
       ) : (
-        <div>Loading...</div>
+        <div>Loading user data...</div>
       )}
+
+      {/* Middle area: Gold Mining */}
+      <div className="gold-mine bg-yellow-100 p-6 rounded shadow mb-4">
+        <h2 className="text-xl font-bold mb-2">Gold Mine</h2>
+        <button
+          className="mine-button bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-full shadow-md"
+          onClick={mineGold}
+        >
+          Mine Gold
+        </button>
+      </div>
+
+      {/* Technology upgrades */}
+      <div className="technology-upgrades bg-white p-4 rounded shadow mb-4">
+        <h2 className="text-xl font-bold mb-2">Upgrades</h2>
+        <ul>
+          {upgrades.map((upgrade, index) => (
+            <li
+              key={index}
+              className="flex items-center justify-between mb-2 p-2 border rounded"
+            >
+              <div className="flex items-center">
+                <img src={upgrade.image} alt={upgrade.name} className="w-8 h-8 mr-2" />
+                <span>
+                  {upgrade.name} (Level {upgrade.level})
+                </span>
+              </div>
+              <button
+                className="bg-green-500 text-white font-bold py-1 px-3 rounded-full shadow"
+                onClick={() => purchaseUpgrade(index)}
+                disabled={gold < upgrade.cost}
+              >
+                Upgrade for {upgrade.cost} Gold
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Daily reward system */}
+      <div className="daily-reward bg-yellow-100 p-4 rounded shadow mb-4">
+        <h2 className="text-xl font-bold mb-2">Daily Reward</h2>
+        <button
+          className="reward-button bg-blue-500 text-white font-bold py-2 px-4 rounded-full shadow"
+          onClick={claimDailyReward}
+          disabled={dailyRewardClaimed}
+        >
+          {dailyRewardClaimed ? 'Already Claimed' : 'Claim 100 Gold'}
+        </button>
+      </div>
+
+      {/* Referral system */}
+      <div className="referral-system bg-white p-4 rounded shadow mb-4">
+        <h2 className="text-xl font-bold mb-2">Referral System</h2>
+        {referral ? (
+          <>
+            <p>Your Referral Code: <strong>{referral.code}</strong></p>
+            <p>Referred Friends: <strong>{referral.referredFriends}</strong></p>
+            <p>Referral Bonus: <strong>{referral.bonus}</strong> Gold</p>
+            <button
+              className="redeem-bonus-button bg-blue-500 text-white font-bold py-2 px-4 rounded-full shadow"
+              onClick={redeemReferralBonus}
+            >
+              Redeem Bonus
+            </button>
+          </>
+        ) : (
+          <button
+            className="generate-code-button bg-green-500 text-white font-bold py-2 px-4 rounded-full shadow"
+            onClick={generateReferralCode}
+          >
+            Generate Referral Code
+          </button>
+        )}
+      </div>
+
+      {/* Navigation buttons */}
+      <div className="navigation bg-gray-200 p-4 rounded shadow mt-4 flex justify-around">
+        <button className="nav-button bg-gray-800 text-white font-bold py-2 px-4 rounded-full">
+          Mine
+        </button>
+        <button className="nav-button bg-gray-800 text-white font-bold py-2 px-4 rounded-full">
+          Technology
+        </button>
+        <button className="nav-button bg-gray-800 text-white font-bold py-2 px-4 rounded-full">
+          Referral
+        </button>
+        <button className="nav-button bg-gray-800 text-white font-bold py-2 px-4 rounded-full">
+          Payment
+        </button>
+      </div>
     </main>
   );
 }
