@@ -1,9 +1,6 @@
-'use client'
-
 import WebApp from '@twa-dev/sdk';
 import { useEffect, useState } from 'react';
 
-// Define the interface for user data
 interface UserData {
   id: number;
   first_name: string;
@@ -72,13 +69,12 @@ export default function GoldOreGame() {
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState<boolean>(false);
 
   useEffect(() => {
-    // Get user data from Telegram Web App SDK and expand to full screen
     if (WebApp.initDataUnsafe.user) {
       const user = WebApp.initDataUnsafe.user as UserData;
       setUserData(user);
-      saveUserData(user); // Save user data to MongoDB
+      loadUserData(user.id); // Load user data from MongoDB on initial load
     }
-    
+
     // Expand to full screen
     WebApp.expand();
 
@@ -90,14 +86,34 @@ export default function GoldOreGame() {
     return () => clearInterval(passiveIncomeInterval);
   }, [passiveIncome]);
 
+  const loadUserData = async (userId: number) => {
+    try {
+      const res = await fetch(`../api/getUserData?id=${userId}`);
+      const data = await res.json();
+      if (data.user) {
+        setGold(data.user.gameProgress.gold || 0);
+        setUpgrades(data.user.gameProgress.upgrades || upgrades);
+        setPassiveIncome(data.user.gameProgress.passiveIncome || 0);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
   const saveUserData = async (user: UserData) => {
+    const gameProgress = {
+      gold,
+      passiveIncome,
+      upgrades,
+    };
+    
     try {
       const res = await fetch('../api/saveUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify({ user, gameProgress }),
       });
       const data = await res.json();
       console.log(data.message);
@@ -107,7 +123,11 @@ export default function GoldOreGame() {
   };
 
   const mineGold = () => {
-    setGold(gold + 1);
+    setGold((prevGold) => {
+      const newGold = prevGold + 1;
+      saveUserData(userData!); // Save progress after mining
+      return newGold;
+    });
   };
 
   const purchaseUpgrade = (index: number) => {
@@ -123,6 +143,7 @@ export default function GoldOreGame() {
       setUpgrades(updatedUpgrades);
       setGold(gold - upgrade.cost);
       calculatePassiveIncome(updatedUpgrades);
+      saveUserData(userData!); // Save progress after upgrade
     }
   };
 
@@ -136,7 +157,11 @@ export default function GoldOreGame() {
 
   const claimDailyReward = () => {
     if (!dailyRewardClaimed) {
-      setGold(gold + 100); // Reward 100 gold
+      setGold((prevGold) => {
+        const newGold = prevGold + 100; // Reward 100 gold
+        saveUserData(userData!); // Save progress after claiming reward
+        return newGold;
+      });
       setDailyRewardClaimed(true);
       setTimeout(() => setDailyRewardClaimed(false), 86400000); // Reset after 24 hours
     }
@@ -148,7 +173,11 @@ export default function GoldOreGame() {
 
   const redeemReferralBonus = () => {
     if (referral) {
-      setGold(gold + referral.bonus); // Redeem the bonus from referrals
+      setGold((prevGold) => {
+        const newGold = prevGold + referral.bonus; // Redeem the bonus from referrals
+        saveUserData(userData!); // Save progress after redeeming bonus
+        return newGold;
+      });
     }
   };
 
