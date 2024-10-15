@@ -9,6 +9,15 @@ import { ReferralSystem } from '../components/ReferralSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useUserData } from '../hooks/useUserData';
 
+// Define the Upgrade type
+interface Upgrade {
+  name: string;
+  level: number;
+  cost: number;
+  productionRate: number;
+  image: string; // Add other relevant properties if needed
+}
+
 const Page = () => {
   const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
   const initialGold = userData?.gold || 0;
@@ -17,7 +26,7 @@ const Page = () => {
 
   // State for gold
   const [gold, setGold] = useState(initialGold);
-  const [upgrades, setUpgrades] = useState(initialUpgrades);
+  const [upgrades, setUpgrades] = useState<Upgrade[]>(initialUpgrades); // Use Upgrade type here
   const [passiveIncome, setPassiveIncome] = useState(initialPassiveIncome);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
   const [referralCode, setReferralCode] = useState<string>('');
