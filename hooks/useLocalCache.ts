@@ -1,3 +1,4 @@
+'use client';
 import { openDB } from 'idb';
 
 export const useLocalCache = () => {
