@@ -3,7 +3,7 @@ import { useLocalCache } from '../hooks/useLocalCache';
 import WebApp from '@twa-dev/sdk';
 
 // Define the interface for user data (coming from Telegram)
-interface UserData {
+export interface UserData {
   id: number;
   first_name: string;
   last_name ? : string;

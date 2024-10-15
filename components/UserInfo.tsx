@@ -1,6 +1,6 @@
 // components/UserInfo.tsx
 import React from 'react';
-
+import { UserData } from '../hooks/useUserData'; // Import UserData from useUserData
 
 interface UserInfoProps {
   userData: UserData | null; // Allow null if user data is not yet loaded
