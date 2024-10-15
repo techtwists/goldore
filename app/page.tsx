@@ -4,7 +4,7 @@ import { UserInfo } from '../components/UserInfo';
 import { GoldMine } from '../components/GoldMine';
 import { UpgradeList } from '../components/UpgradeList';
 import { DailyReward } from '../components/DailyReward';
-import { ReferralSystem } from '../components/../components/RefferalSystem';
+import { ReferralSystem } from '../components/RefferalSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
