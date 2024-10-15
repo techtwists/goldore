@@ -35,7 +35,7 @@ const Page = () => {
     purchaseUpgrade,
   } = useGoldOreGame(initialGold, initialUpgrades, initialPassiveIncome);
 
-  const claimDailyReward = () => {
+  const claimDailyReward = async() => {
     if (dailyRewardClaimed) {
       alert('You have already claimed your daily reward for today.');
       return; // Prevent claiming if already claimed
