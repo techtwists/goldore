@@ -27,6 +27,12 @@ export default function Home() {
   const [passiveIncome, setPassiveIncome] = useState(0);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
+  const [isClient, setIsClient] = useState(false); // To track if we are in the client
+
+  // This useEffect is for detecting if the code is running in the browser
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Update state once userData is loaded
   useEffect(() => {
@@ -37,8 +43,10 @@ export default function Home() {
     }
   }, [userData]);
 
-  // Load saved data from localStorage
+  // Load saved data from localStorage if in client
   useEffect(() => {
+    if (!isClient) return; // Ensure this runs only on the client
+
     const savedGold = localStorage.getItem('goldOreGold');
     const savedUpgrades = localStorage.getItem('goldOreUpgrades');
     const savedClaimDate = localStorage.getItem('lastClaimed');
@@ -52,16 +60,18 @@ export default function Home() {
     if (savedClaimDate) {
       const currentTime = Date.now();
       setLastClaimed(Number(savedClaimDate));
-      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); 
+      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000);
     }
-  }, []);
+  }, [isClient]);
 
   // Save data to localStorage whenever relevant state changes
   useEffect(() => {
+    if (!isClient) return; // Ensure this runs only on the client
+
     localStorage.setItem('goldOreGold', String(gold));
     localStorage.setItem('goldOreUpgrades', JSON.stringify(upgrades));
     if (lastClaimed) localStorage.setItem('lastClaimed', String(lastClaimed));
-  }, [gold, upgrades, lastClaimed]);
+  }, [gold, upgrades, lastClaimed, isClient]);
 
   // Calculate passive income based on upgrades
   const calculatePassiveIncome = (updatedUpgrades: Upgrade[]) => {
@@ -115,6 +125,7 @@ export default function Home() {
 
   // Display loading state if userData is not yet available
   if (!userData) return <p>Loading...</p>;
+  if (!isClient) return null; // Prevent rendering until client-side
 
   return (
     <div className="game-container max-w-md mx-auto p-6 bg-gray-100">
