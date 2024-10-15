@@ -30,6 +30,9 @@ const Page = () => {
   const [passiveIncome, setPassiveIncome] = useState(initialPassiveIncome);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
   const [referralCode, setReferralCode] = useState<string>('');
+  
+  // State for daily reward claimed
+  const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
   // Load from local storage and set state
   useEffect(() => {
@@ -49,6 +52,7 @@ const Page = () => {
     const savedClaimDate = localStorage.getItem('lastClaimed');
     if (savedClaimDate) {
       setLastClaimed(Number(savedClaimDate));
+      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); // Check if already claimed today
     }
   }, []);
 
@@ -101,6 +105,7 @@ const Page = () => {
     const rewardAmount = 100; // Amount of gold to give as a daily reward
     setGold((prevGold) => prevGold + rewardAmount);
     setLastClaimed(currentTime);
+    setDailyRewardClaimed(true); // Set the state to indicate reward has been claimed
     alert(`You have claimed your daily reward of ${rewardAmount} gold!`);
   };
 
@@ -132,7 +137,7 @@ const Page = () => {
       <UserInfo userData={userData} gold={gold} passiveIncome={passiveIncome} />
       <GoldMine mineGold={mineGold} />
       <UpgradeList upgrades={upgrades} gold={gold} purchaseUpgrade={purchaseUpgrade} />
-      <DailyReward claimDailyReward={claimDailyReward} />
+      <DailyReward claimDailyReward={claimDailyReward} dailyRewardClaimed={dailyRewardClaimed} /> {/* Pass the prop here */}
       <ReferralSystem referral={referralCode} generateReferralCode={generateReferralCode} redeemReferralBonus={redeemReferralBonus} />
       <NavigationButtons />
     </div>
