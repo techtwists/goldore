@@ -9,13 +9,10 @@ import { ReferralSystem } from '../components/ReferralSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
-import WebApp from '@twa-dev/sdk'; // Assuming you're using Telegram WebApp SDK
+import WebApp from '@twa-dev/sdk';
 
 const Page = () => {
-  const userId = 12345; // Telegram user ID from context or authentication
-  const { userData } = useUserData(userId);
-
-  // Game state (initial data can be fetched from userData or server)
+  const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
   const initialGold = userData?.gold || 0;
   const initialUpgrades = userData?.upgrades || [];
   const initialPassiveIncome = userData?.passiveIncome || 0;
@@ -29,20 +26,34 @@ const Page = () => {
   } = useGoldOreGame(initialGold, initialUpgrades, initialPassiveIncome);
 
   const claimDailyReward = () => {
-    // Handle claiming the daily reward (e.g., update state and server)
+    const newGold = gold + 100; // Reward is 100 gold
+    const updatedData = { ...userData, gold: newGold, dailyRewardClaimed: true };
+    localStorage.setItem('goldOreUserData', JSON.stringify(updatedData));
+    // Update gold in MongoDB
+    saveGold(newGold);
   };
 
   const generateReferralCode = () => {
-    // Generate referral code and save to user data
+    // Generate and save referral code logic here
   };
 
   const redeemReferralBonus = () => {
-    // Handle redeeming the referral bonus
+    // Redeem referral bonus logic here
   };
 
-  useEffect(() => {
-    WebApp.init(); // Initialize Telegram WebApp SDK if necessary
-  }, []);
+  const saveGold = async (newGold: number) => {
+    try {
+      await fetch('/api/updateGold', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: userData?.id, gold: newGold }),
+      });
+    } catch (error) {
+      console.error('Error updating gold:', error);
+    }
+  };
 
   if (!userData) return <p>Loading...</p>;
 
