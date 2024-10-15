@@ -1,3 +1,4 @@
+'use client';
 // components/UserInfo.tsx
 import React from 'react';
 import { UserData } from '../hooks/useUserData'; // Import UserData from useUserData
