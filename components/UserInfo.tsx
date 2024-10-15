@@ -1,7 +1,6 @@
 // components/UserInfo.tsx
 import React from 'react';
 import { useUserData } from '../hooks/useUserData'; // Import UserData from useUserData
-const {UserData} = useUserData();
 interface UserInfoProps {
   userData: UserData | null; // Allow null if user data is not yet loaded
   gold: number;
