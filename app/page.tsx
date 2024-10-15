@@ -18,56 +18,51 @@ interface Upgrade {
 }
 
 const Page = () => {
-  const { userData } = useUserData();
-  const initialGold = userData?.gold || 0;
-  const initialUpgrades = userData?.upgrades || [];
-  const initialPassiveIncome = userData?.passiveIncome || 0;
+  const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
 
-  const [gold, setGold] = useState(initialGold);
-  const [upgrades, setUpgrades] = useState<Upgrade[]>(initialUpgrades);
-  const [passiveIncome, setPassiveIncome] = useState(initialPassiveIncome);
+  // State for gold, upgrades, passive income, and daily reward
+  const [gold, setGold] = useState(0);
+  const [upgrades, setUpgrades] = useState<Upgrade[]>([]);
+  const [passiveIncome, setPassiveIncome] = useState(0);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
-  // Telegram full-screen mode
+  // Update state once userData is loaded
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.expand(); // Enter full-screen mode for Telegram mini-app
+    if (userData) {
+      setGold(userData.gold || 0);
+      setUpgrades(userData.upgrades || []);
+      setPassiveIncome(userData.passiveIncome || 0);
+    }
+  }, [userData]);
+
+  // Load saved data from localStorage
+  useEffect(() => {
+    const savedGold = localStorage.getItem('goldOreGold');
+    const savedUpgrades = localStorage.getItem('goldOreUpgrades');
+    const savedClaimDate = localStorage.getItem('lastClaimed');
+
+    if (savedGold) setGold(Number(savedGold));
+    if (savedUpgrades) {
+      const parsedUpgrades = JSON.parse(savedUpgrades);
+      setUpgrades(parsedUpgrades);
+      calculatePassiveIncome(parsedUpgrades);
+    }
+    if (savedClaimDate) {
+      const currentTime = Date.now();
+      setLastClaimed(Number(savedClaimDate));
+      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); 
     }
   }, []);
 
+  // Save data to localStorage whenever relevant state changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedGold = localStorage.getItem('goldOreGold');
-      const savedUpgrades = localStorage.getItem('goldOreUpgrades');
-
-      if (savedGold) {
-        setGold(Number(savedGold));
-      }
-
-      if (savedUpgrades) {
-        const parsedUpgrades = JSON.parse(savedUpgrades);
-        setUpgrades(parsedUpgrades);
-        calculatePassiveIncome(parsedUpgrades);
-      }
-
-      const savedClaimDate = localStorage.getItem('lastClaimed');
-      if (savedClaimDate) {
-        const currentTime = Date.now();
-        setLastClaimed(Number(savedClaimDate));
-        setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('goldOreGold', String(gold));
-      localStorage.setItem('goldOreUpgrades', JSON.stringify(upgrades));
-      localStorage.setItem('lastClaimed', String(lastClaimed));
-    }
+    localStorage.setItem('goldOreGold', String(gold));
+    localStorage.setItem('goldOreUpgrades', JSON.stringify(upgrades));
+    if (lastClaimed) localStorage.setItem('lastClaimed', String(lastClaimed));
   }, [gold, upgrades, lastClaimed]);
 
+  // Calculate passive income based on upgrades
   const calculatePassiveIncome = (updatedUpgrades: Upgrade[]) => {
     const totalPassiveIncome = updatedUpgrades.reduce(
       (total, upgrade) => total + (upgrade.productionRate * upgrade.level),
@@ -76,10 +71,12 @@ const Page = () => {
     setPassiveIncome(totalPassiveIncome);
   };
 
+  // Handle mining gold
   const mineGold = () => {
     setGold((prevGold) => prevGold + 1);
   };
 
+  // Handle purchasing an upgrade
   const purchaseUpgrade = (index: number) => {
     const upgrade = upgrades[index];
     if (gold >= upgrade.cost) {
@@ -98,6 +95,7 @@ const Page = () => {
     }
   };
 
+  // Handle claiming daily reward
   const claimDailyReward = () => {
     const currentTime = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -107,13 +105,14 @@ const Page = () => {
       return;
     }
 
-    const rewardAmount = 100;
+    const rewardAmount = 100; 
     setGold((prevGold) => prevGold + rewardAmount);
     setLastClaimed(currentTime);
     setDailyRewardClaimed(true);
     alert(`You have claimed your daily reward of ${rewardAmount} gold!`);
   };
 
+  // Display loading state if userData is not yet available
   if (!userData) return <p>Loading...</p>;
 
   return (
