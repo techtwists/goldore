@@ -14,6 +14,18 @@ const Page = () => {
   const initialGold = userData?.gold || 0;
   const initialUpgrades = userData?.upgrades || [];
   const initialPassiveIncome = userData?.passiveIncome || 0;
+  const lastClaimDate = userData?.lastClaimDate || '';
+  const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+  
+  // Reset dailyRewardClaimed if lastClaimDate is not today
+  const dailyRewardClaimed = userData?.dailyRewardClaimed || false;
+  const shouldResetClaimed = lastClaimDate !== currentDate;
+  
+  // Handle the logic to reset claimed status if a new day has started
+  if (shouldResetClaimed) {
+    userData.dailyRewardClaimed = false; // Reset daily reward claim status
+    userData.lastClaimDate = currentDate; // Update last claim date
+  }
 
   const {
     gold,
