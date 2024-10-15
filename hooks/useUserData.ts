@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useLocalCache } from '../hooks/useLocalCache';
 import WebApp from '@twa-dev/sdk';
