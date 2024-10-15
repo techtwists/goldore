@@ -13,7 +13,8 @@
     "react-dom": "^18",
     "next": "14.2.15",
     "mongodb":"^6.9.0",
-    "@twa-dev/sdk":"^7.10.1"
+    "@twa-dev/sdk":"^7.10.1",
+    "idb":"^8.0.0"
   },
   "devDependencies": {
     "typescript": "^5",
