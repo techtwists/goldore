@@ -34,27 +34,27 @@ const Page = () => {
   // State for daily reward claimed
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
-  // Load from local storage and set state
-  useEffect(() => {
-    const savedGold = localStorage.getItem('goldOreGold');
-    const savedUpgrades = localStorage.getItem('goldOreUpgrades');
+ useEffect(() => {
+  const savedGold = localStorage.getItem('goldOreGold');
+  const savedUpgrades = localStorage.getItem('goldOreUpgrades');
 
-    if (savedGold) {
-      setGold(Number(savedGold));
-    }
+  if (savedGold) {
+    setGold(Number(savedGold));
+  }
 
-    if (savedUpgrades) {
-      const parsedUpgrades = JSON.parse(savedUpgrades);
-      setUpgrades(parsedUpgrades);
-      calculatePassiveIncome(parsedUpgrades);
-    }
+  if (savedUpgrades) {
+    const parsedUpgrades = JSON.parse(savedUpgrades);
+    setUpgrades(parsedUpgrades);
+    calculatePassiveIncome(parsedUpgrades);
+  }
 
-    const savedClaimDate = localStorage.getItem('lastClaimed');
-    if (savedClaimDate) {
-      setLastClaimed(Number(savedClaimDate));
-      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); // Check if already claimed today
-    }
-  }, []);
+  const savedClaimDate = localStorage.getItem('lastClaimed');
+  if (savedClaimDate) {
+    const currentTime = Date.now(); // Add this line to define currentTime
+    setLastClaimed(Number(savedClaimDate));
+    setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); // Check if already claimed today
+  }
+}, []);
 
   // Save gold, upgrades, and last claimed date to local storage on change
   useEffect(() => {
