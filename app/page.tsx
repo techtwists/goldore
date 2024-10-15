@@ -18,6 +18,13 @@ interface Upgrade {
   image: string; // Add other relevant properties if needed
 }
 
+// Define the Referral type
+interface Referral {
+  code: string;                // The referral code
+  referredFriends: number;     // Number of friends referred
+  bonus: number;               // Bonus amount
+}
+
 const Page = () => {
   const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
   const initialGold = userData?.gold || 0;
@@ -29,32 +36,32 @@ const Page = () => {
   const [upgrades, setUpgrades] = useState<Upgrade[]>(initialUpgrades); // Use Upgrade type here
   const [passiveIncome, setPassiveIncome] = useState(initialPassiveIncome);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
-  const [referralCode, setReferralCode] = useState<string>('');
-  
+  const [referral, setReferral] = useState<Referral | null>(null); // Store Referral object here
+
   // State for daily reward claimed
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
- useEffect(() => {
-  const savedGold = localStorage.getItem('goldOreGold');
-  const savedUpgrades = localStorage.getItem('goldOreUpgrades');
+  useEffect(() => {
+    const savedGold = localStorage.getItem('goldOreGold');
+    const savedUpgrades = localStorage.getItem('goldOreUpgrades');
 
-  if (savedGold) {
-    setGold(Number(savedGold));
-  }
+    if (savedGold) {
+      setGold(Number(savedGold));
+    }
 
-  if (savedUpgrades) {
-    const parsedUpgrades = JSON.parse(savedUpgrades);
-    setUpgrades(parsedUpgrades);
-    calculatePassiveIncome(parsedUpgrades);
-  }
+    if (savedUpgrades) {
+      const parsedUpgrades = JSON.parse(savedUpgrades);
+      setUpgrades(parsedUpgrades);
+      calculatePassiveIncome(parsedUpgrades);
+    }
 
-  const savedClaimDate = localStorage.getItem('lastClaimed');
-  if (savedClaimDate) {
-    const currentTime = Date.now(); // Add this line to define currentTime
-    setLastClaimed(Number(savedClaimDate));
-    setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); // Check if already claimed today
-  }
-}, []);
+    const savedClaimDate = localStorage.getItem('lastClaimed');
+    if (savedClaimDate) {
+      const currentTime = Date.now(); // Add this line to define currentTime
+      setLastClaimed(Number(savedClaimDate));
+      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); // Check if already claimed today
+    }
+  }, []);
 
   // Save gold, upgrades, and last claimed date to local storage on change
   useEffect(() => {
@@ -111,23 +118,39 @@ const Page = () => {
 
   const generateReferralCode = () => {
     const code = Math.random().toString(36).substring(2, 8); // Generates a random code
-    setReferralCode(code);
+    const newReferral: Referral = {
+      code: code,
+      referredFriends: 0,
+      bonus: 0 // Initial bonus
+    };
+    setReferral(newReferral); // Update referral state
     // Optionally save the referral code to the user's data in MongoDB
     alert(`Your referral code is: ${code}`);
   };
 
   const redeemReferralBonus = () => {
-    // Logic to redeem a referral bonus
-    // Here you would check if the referral code is valid and if so, grant a bonus
-    if (!referralCode) {
+    if (!referral) {
       alert("Please generate a referral code first.");
       return;
     }
 
-    // Assume a fixed bonus for simplicity
+    // Logic to redeem a referral bonus
+    // Here you would check if the referral code is valid and if so, grant a bonus
     const referralBonus = 50; // Gold bonus for using referral code
     setGold((prevGold) => prevGold + referralBonus);
     alert(`You've redeemed your referral bonus of ${referralBonus} gold!`);
+    
+    // Optionally update the number of referred friends
+    setReferral((prevReferral) => {
+      if (prevReferral) {
+        return {
+          ...prevReferral,
+          referredFriends: prevReferral.referredFriends + 1, // Increment friends count
+          bonus: referralBonus // Update bonus if necessary
+        };
+      }
+      return prevReferral;
+    });
   };
 
   if (!userData) return <p>Loading...</p>;
@@ -137,8 +160,12 @@ const Page = () => {
       <UserInfo userData={userData} gold={gold} passiveIncome={passiveIncome} />
       <GoldMine mineGold={mineGold} />
       <UpgradeList upgrades={upgrades} gold={gold} purchaseUpgrade={purchaseUpgrade} />
-      <DailyReward claimDailyReward={claimDailyReward} dailyRewardClaimed={dailyRewardClaimed} /> {/* Pass the prop here */}
-      <ReferralSystem referral={referralCode} generateReferralCode={generateReferralCode} redeemReferralBonus={redeemReferralBonus} />
+      <DailyReward claimDailyReward={claimDailyReward} dailyRewardClaimed={dailyRewardClaimed} />
+      <ReferralSystem 
+        referral={referral} // Pass the whole referral object
+        generateReferralCode={generateReferralCode} 
+        redeemReferralBonus={redeemReferralBonus} 
+      />
       <NavigationButtons />
     </div>
   );
