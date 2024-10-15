@@ -1,3 +1,4 @@
+import { useState } from 'react';
 
 // Define the Upgrade type if not already defined
 interface Upgrade {
