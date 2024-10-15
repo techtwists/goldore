@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocalCache } from './useLocalCache';
+import { useLocalCache } from '../hooks/useLocalCache';
 import WebApp from '@twa-dev/sdk';
 
 // Define the interface for user data (coming from Telegram)
