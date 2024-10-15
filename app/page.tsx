@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { UserInfo } from '../components/UserInfo';
 import { GoldMine } from '../components/GoldMine';
 import { UpgradeList } from '../components/UpgradeList';
@@ -9,7 +8,6 @@ import { ReferralSystem } from '../components/../components/RefferalSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
-import WebApp from '@twa-dev/sdk';
 
 const Page = () => {
   const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
