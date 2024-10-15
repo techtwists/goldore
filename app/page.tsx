@@ -4,28 +4,38 @@ import { UserInfo } from '../components/UserInfo';
 import { GoldMine } from '../components/GoldMine';
 import { UpgradeList } from '../components/UpgradeList';
 import { DailyReward } from '../components/DailyReward';
-import { ReferralSystem } from '../components/../components/RefferalSystem';
+import { ReferralSystem } from '../components/ReferralSystem'; // Fixed path to ReferralSystem
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
+import { useEffect } from 'react';
 
 const Page = () => {
-  const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
+  const { userData, setUserData } = useUserData(); // Fetch user data from Telegram and MongoDB
+  
+  // Ensure userData is available before proceeding
+  if (!userData) return <p>Loading...</p>;
+
   const initialGold = userData?.gold || 0;
   const initialUpgrades = userData?.upgrades || [];
   const initialPassiveIncome = userData?.passiveIncome || 0;
+
+  // Check if the daily reward can be claimed
   const lastClaimDate = userData?.lastClaimDate || '';
   const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-  
-  // Reset dailyRewardClaimed if lastClaimDate is not today
+
+  // Determine if the daily reward has already been claimed today
   const dailyRewardClaimed = userData?.dailyRewardClaimed || false;
   const shouldResetClaimed = lastClaimDate !== currentDate;
-  
+
   // Handle the logic to reset claimed status if a new day has started
-  if (shouldResetClaimed) {
-    userData.dailyRewardClaimed = false; // Reset daily reward claim status
-    userData.lastClaimDate = currentDate; // Update last claim date
-  }
+  useEffect(() => {
+    if (shouldResetClaimed) {
+      userData.dailyRewardClaimed = false; // Reset daily reward claim status
+      userData.lastClaimDate = currentDate; // Update last claim date
+      setUserData({ ...userData }); // Update state to trigger re-render
+    }
+  }, [shouldResetClaimed, currentDate, userData, setUserData]);
 
   const {
     gold,
@@ -35,11 +45,12 @@ const Page = () => {
     purchaseUpgrade,
   } = useGoldOreGame(initialGold, initialUpgrades, initialPassiveIncome);
 
-  const claimDailyReward = async() => {
+  const claimDailyReward = () => {
     if (dailyRewardClaimed) {
       alert('You have already claimed your daily reward for today.');
       return; // Prevent claiming if already claimed
     }
+
     const newGold = gold + 100; // Daily reward of 100 gold
     const updatedData = {
       ...userData,
@@ -47,12 +58,10 @@ const Page = () => {
       dailyRewardClaimed: true,
       lastClaimDate: currentDate // Update the last claim date
     };
-    // Update the state with the new gold amount
-    useUserData.setUserData(updatedData);
 
+    setUserData(updatedData); // Update state with new user data
   };
-    
-    
+
   const generateReferralCode = () => {
     // Generate and save referral code logic here
   };
@@ -60,8 +69,6 @@ const Page = () => {
   const redeemReferralBonus = () => {
     // Redeem referral bonus logic here
   };
-
-  if (!userData) return <p>Loading...</p>;
 
   return (
     <div className="game-container max-w-md mx-auto p-6 bg-gray-100">
