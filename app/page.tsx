@@ -7,7 +7,7 @@ import { UpgradeList } from '../components/UpgradeList';
 import { DailyReward } from '../components/DailyReward';
 import { ReferralSystem } from '../components/../components/RefferalSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
-import { useGoldOreGame } from '../hooks/UseGoldOreGame';
+import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
 import WebApp from '@twa-dev/sdk';
 
