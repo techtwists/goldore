@@ -4,7 +4,7 @@ import { UserInfo } from '../components/UserInfo';
 import { GoldMine } from '../components/GoldMine';
 import { UpgradeList } from '../components/UpgradeList';
 import { DailyReward } from '../components/DailyReward';
-import { ReferralSystem } from '../components/ReferralSystem'; // Fixed path to ReferralSystem
+import { ReferralSystem } from '../components/ReferralSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 
 const Page = () => {
   const { userData, setUserData } = useUserData(); // Fetch user data from Telegram and MongoDB
-  
+
   // Ensure userData is available before proceeding
   if (!userData) return <p>Loading...</p>;
 
@@ -20,20 +20,22 @@ const Page = () => {
   const initialUpgrades = userData?.upgrades || [];
   const initialPassiveIncome = userData?.passiveIncome || 0;
 
-  // Check if the daily reward can be claimed
+  // Define variables outside the effect for consistency
   const lastClaimDate = userData?.lastClaimDate || '';
   const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-
-  // Determine if the daily reward has already been claimed today
   const dailyRewardClaimed = userData?.dailyRewardClaimed || false;
+
+  // Reset dailyRewardClaimed if the lastClaimDate is not today
   const shouldResetClaimed = lastClaimDate !== currentDate;
 
-  // Handle the logic to reset claimed status if a new day has started
   useEffect(() => {
     if (shouldResetClaimed) {
-      userData.dailyRewardClaimed = false; // Reset daily reward claim status
-      userData.lastClaimDate = currentDate; // Update last claim date
-      setUserData({ ...userData }); // Update state to trigger re-render
+      const updatedUserData = {
+        ...userData,
+        dailyRewardClaimed: false, // Reset daily reward claim status
+        lastClaimDate: currentDate, // Update last claim date
+      };
+      setUserData(updatedUserData); // Update state to trigger re-render
     }
   }, [shouldResetClaimed, currentDate, userData, setUserData]);
 
