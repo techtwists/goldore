@@ -17,7 +17,8 @@ interface Upgrade {
   image: string;
 }
 
-const Page = () => {
+// Change the component name to Home
+export default function Home() {
   const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
 
   // State for gold, upgrades, passive income, and daily reward
@@ -124,6 +125,4 @@ const Page = () => {
       <NavigationButtons />
     </div>
   );
-};
-
-export default Page;
+}
