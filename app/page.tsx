@@ -48,6 +48,12 @@ const Page = () => {
       lastClaimDate: currentDate // Update the last claim date
     };
   };
+  // Save updated data to local cache
+    await useUserData.saveToCache(userData?.id, updatedData);
+    
+    // Update the state with the new gold amount
+    useUserData.setUserData(updatedData);
+  };
 
   const generateReferralCode = () => {
     // Generate and save referral code logic here
