@@ -5,7 +5,6 @@ import { UserInfo } from '../components/UserInfo';
 import { GoldMine } from '../components/GoldMine';
 import { UpgradeList } from '../components/UpgradeList';
 import { DailyReward } from '../components/DailyReward';
-import { ReferralSystem } from '../components/ReferralSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { useUserData } from '../hooks/useUserData';
 
@@ -15,59 +14,58 @@ interface Upgrade {
   level: number;
   cost: number;
   productionRate: number;
-  image: string; // Add other relevant properties if needed
-}
-
-// Define the Referral type
-interface Referral {
-  code: string;                // The referral code
-  referredFriends: number;     // Number of friends referred
-  bonus: number;               // Bonus amount
+  image: string;
 }
 
 const Page = () => {
-  const { userData } = useUserData(); // Fetch user data from Telegram and MongoDB
+  const { userData } = useUserData();
   const initialGold = userData?.gold || 0;
   const initialUpgrades = userData?.upgrades || [];
   const initialPassiveIncome = userData?.passiveIncome || 0;
 
-  // State for gold
   const [gold, setGold] = useState(initialGold);
-  const [upgrades, setUpgrades] = useState<Upgrade[]>(initialUpgrades); // Use Upgrade type here
+  const [upgrades, setUpgrades] = useState<Upgrade[]>(initialUpgrades);
   const [passiveIncome, setPassiveIncome] = useState(initialPassiveIncome);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
-  const [referral, setReferral] = useState<Referral | null>(null); // Store Referral object here
-
-  // State for daily reward claimed
   const [dailyRewardClaimed, setDailyRewardClaimed] = useState(false);
 
+  // Telegram full-screen mode
   useEffect(() => {
-    const savedGold = localStorage.getItem('goldOreGold');
-    const savedUpgrades = localStorage.getItem('goldOreUpgrades');
-
-    if (savedGold) {
-      setGold(Number(savedGold));
-    }
-
-    if (savedUpgrades) {
-      const parsedUpgrades = JSON.parse(savedUpgrades);
-      setUpgrades(parsedUpgrades);
-      calculatePassiveIncome(parsedUpgrades);
-    }
-
-    const savedClaimDate = localStorage.getItem('lastClaimed');
-    if (savedClaimDate) {
-      const currentTime = Date.now(); // Add this line to define currentTime
-      setLastClaimed(Number(savedClaimDate));
-      setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000); // Check if already claimed today
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      window.Telegram.WebApp.expand(); // Enter full-screen mode for Telegram mini-app
     }
   }, []);
 
-  // Save gold, upgrades, and last claimed date to local storage on change
   useEffect(() => {
-    localStorage.setItem('goldOreGold', String(gold));
-    localStorage.setItem('goldOreUpgrades', JSON.stringify(upgrades));
-    localStorage.setItem('lastClaimed', String(lastClaimed));
+    if (typeof window !== 'undefined') {
+      const savedGold = localStorage.getItem('goldOreGold');
+      const savedUpgrades = localStorage.getItem('goldOreUpgrades');
+
+      if (savedGold) {
+        setGold(Number(savedGold));
+      }
+
+      if (savedUpgrades) {
+        const parsedUpgrades = JSON.parse(savedUpgrades);
+        setUpgrades(parsedUpgrades);
+        calculatePassiveIncome(parsedUpgrades);
+      }
+
+      const savedClaimDate = localStorage.getItem('lastClaimed');
+      if (savedClaimDate) {
+        const currentTime = Date.now();
+        setLastClaimed(Number(savedClaimDate));
+        setDailyRewardClaimed(currentTime - Number(savedClaimDate) < 24 * 60 * 60 * 1000);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('goldOreGold', String(gold));
+      localStorage.setItem('goldOreUpgrades', JSON.stringify(upgrades));
+      localStorage.setItem('lastClaimed', String(lastClaimed));
+    }
   }, [gold, upgrades, lastClaimed]);
 
   const calculatePassiveIncome = (updatedUpgrades: Upgrade[]) => {
@@ -89,14 +87,14 @@ const Page = () => {
       updatedUpgrades[index] = {
         ...upgrade,
         level: upgrade.level + 1,
-        cost: Math.floor(upgrade.cost * 1.5), // Adjust the cost for the next level
-        productionRate: Math.floor(upgrade.productionRate * 1.2), // Adjust production rate
+        cost: Math.floor(upgrade.cost * 1.5),
+        productionRate: Math.floor(upgrade.productionRate * 1.2),
       };
       setUpgrades(updatedUpgrades);
       setGold(gold - upgrade.cost);
       calculatePassiveIncome(updatedUpgrades);
     } else {
-      alert("Not enough gold to purchase this upgrade."); // Optional feedback
+      alert("Not enough gold to purchase this upgrade.");
     }
   };
 
@@ -109,48 +107,11 @@ const Page = () => {
       return;
     }
 
-    const rewardAmount = 100; // Amount of gold to give as a daily reward
+    const rewardAmount = 100;
     setGold((prevGold) => prevGold + rewardAmount);
     setLastClaimed(currentTime);
-    setDailyRewardClaimed(true); // Set the state to indicate reward has been claimed
+    setDailyRewardClaimed(true);
     alert(`You have claimed your daily reward of ${rewardAmount} gold!`);
-  };
-
-  const generateReferralCode = () => {
-    const code = Math.random().toString(36).substring(2, 8); // Generates a random code
-    const newReferral: Referral = {
-      code: code,
-      referredFriends: 0,
-      bonus: 0 // Initial bonus
-    };
-    setReferral(newReferral); // Update referral state
-    // Optionally save the referral code to the user's data in MongoDB
-    alert(`Your referral code is: ${code}`);
-  };
-
-  const redeemReferralBonus = () => {
-    if (!referral) {
-      alert("Please generate a referral code first.");
-      return;
-    }
-
-    // Logic to redeem a referral bonus
-    // Here you would check if the referral code is valid and if so, grant a bonus
-    const referralBonus = 50; // Gold bonus for using referral code
-    setGold((prevGold) => prevGold + referralBonus);
-    alert(`You've redeemed your referral bonus of ${referralBonus} gold!`);
-    
-    // Optionally update the number of referred friends
-    setReferral((prevReferral) => {
-      if (prevReferral) {
-        return {
-          ...prevReferral,
-          referredFriends: prevReferral.referredFriends + 1, // Increment friends count
-          bonus: referralBonus // Update bonus if necessary
-        };
-      }
-      return prevReferral;
-    });
   };
 
   if (!userData) return <p>Loading...</p>;
@@ -161,11 +122,6 @@ const Page = () => {
       <GoldMine mineGold={mineGold} />
       <UpgradeList upgrades={upgrades} gold={gold} purchaseUpgrade={purchaseUpgrade} />
       <DailyReward claimDailyReward={claimDailyReward} dailyRewardClaimed={dailyRewardClaimed} />
-      <ReferralSystem 
-        referral={referral} // Pass the whole referral object
-        generateReferralCode={generateReferralCode} 
-        redeemReferralBonus={redeemReferralBonus} 
-      />
       <NavigationButtons />
     </div>
   );
