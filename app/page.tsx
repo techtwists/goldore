@@ -17,15 +17,6 @@ interface Upgrade {
   image: string;
 }
 
-// Extend Window interface to include Telegram
-interface Window {
-  Telegram?: {
-    WebApp?: {
-      expand: () => void;
-    };
-  };
-}
-
 const Page = () => {
   const { userData } = useUserData();
   const initialGold = userData?.gold || 0;
