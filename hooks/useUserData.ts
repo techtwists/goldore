@@ -14,7 +14,9 @@ interface UserData {
   upgrades ? : any[];
   passiveIncome ? : number;
   dailyRewardClaimed ? : boolean;
+  lastClaimDate?: string; // Store the date of the last claim
   referral ? : any;
+
 }
 
 export const useUserData = () => {

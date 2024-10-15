@@ -24,9 +24,17 @@ const Page = () => {
   } = useGoldOreGame(initialGold, initialUpgrades, initialPassiveIncome);
 
   const claimDailyReward = () => {
-    const newGold = gold + 100; // Reward is 100 gold
-    const updatedData = { ...userData, gold: newGold, dailyRewardClaimed: true };
-    localStorage.setItem('goldOreUserData', JSON.stringify(updatedData));
+    if (dailyRewardClaimed) {
+      alert('You have already claimed your daily reward for today.');
+      return; // Prevent claiming if already claimed
+    }
+    const newGold = gold + 100; // Daily reward of 100 gold
+    const updatedData = {
+      ...userData,
+      gold: newGold,
+      dailyRewardClaimed: true,
+      lastClaimDate: currentDate // Update the last claim date
+    };
   };
 
   const generateReferralCode = () => {
@@ -44,7 +52,7 @@ const Page = () => {
       <UserInfo userData={userData} gold={gold} passiveIncome={passiveIncome} />
       <GoldMine mineGold={mineGold} />
       <UpgradeList upgrades={upgrades} gold={gold} purchaseUpgrade={purchaseUpgrade} />
-      <DailyReward claimDailyReward={claimDailyReward} dailyRewardClaimed={userData.dailyRewardClaimed} />
+      <DailyReward claimDailyReward={claimDailyReward} dailyRewardClaimed={dailyRewardClaimed} />
       <ReferralSystem referral={userData.referral} generateReferralCode={generateReferralCode} redeemReferralBonus={redeemReferralBonus} />
       <NavigationButtons />
     </div>
