@@ -7,7 +7,6 @@ import { UpgradeList } from '../components/UpgradeList';
 import { DailyReward } from '../components/DailyReward';
 import { ReferralSystem } from '../components/ReferralSystem';
 import { NavigationButtons } from '../components/NavigationButtons';
-import { useGoldOreGame } from '../hooks/useGoldOreGame';
 import { useUserData } from '../hooks/useUserData';
 
 const Page = () => {
