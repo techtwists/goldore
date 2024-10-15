@@ -6,10 +6,15 @@ import WebApp from '@twa-dev/sdk';
 interface UserData {
   id: number;
   first_name: string;
-  last_name?: string;
-  username?: string;
+  last_name ? : string;
+  username ? : string;
   language_code: string;
-  is_premium?: boolean;
+  is_premium ? : boolean;
+  gold ? : number;
+  upgrades ? : any[];
+  passiveIncome ? : number;
+  dailyRewardClaimed ? : boolean;
+  referral ? : any;
 }
 
 export const useUserData = () => {

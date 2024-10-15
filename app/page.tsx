@@ -27,8 +27,6 @@ const Page = () => {
     const newGold = gold + 100; // Reward is 100 gold
     const updatedData = { ...userData, gold: newGold, dailyRewardClaimed: true };
     localStorage.setItem('goldOreUserData', JSON.stringify(updatedData));
-    // Update gold in MongoDB
-    saveGold(newGold);
   };
 
   const generateReferralCode = () => {
@@ -37,20 +35,6 @@ const Page = () => {
 
   const redeemReferralBonus = () => {
     // Redeem referral bonus logic here
-  };
-
-  const saveGold = async (newGold: number) => {
-    try {
-      await fetch('/api/updateGold', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: userData?.id, gold: newGold }),
-      });
-    } catch (error) {
-      console.error('Error updating gold:', error);
-    }
   };
 
   if (!userData) return <p>Loading...</p>;
