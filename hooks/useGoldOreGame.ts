@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 
 // Define the Upgrade type if not already defined
 interface Upgrade {
@@ -10,36 +9,14 @@ interface Upgrade {
 }
 
 export const useGoldOreGame = (initialGold: number, initialUpgrades: Upgrade[], initialPassiveIncome: number) => {
-  const [gold, setGold] = useState(initialGold);
   const [upgrades, setUpgrades] = useState<Upgrade[]>(initialUpgrades);
   const [passiveIncome, setPassiveIncome] = useState(initialPassiveIncome);
 
-  // Effect to load from local storage (if needed)
-  useEffect(() => {
-    const savedGold = localStorage.getItem('goldOreGold');
-    const savedUpgrades = localStorage.getItem('goldOreUpgrades');
-
-    if (savedGold) {
-      setGold(Number(savedGold));
-    }
-
-    if (savedUpgrades) {
-      setUpgrades(JSON.parse(savedUpgrades));
-      calculatePassiveIncome(JSON.parse(savedUpgrades));
-    }
-  }, []);
-
-  // Effect to save gold and upgrades to local storage
-  useEffect(() => {
-    localStorage.setItem('goldOreGold', String(gold));
-    localStorage.setItem('goldOreUpgrades', JSON.stringify(upgrades));
-  }, [gold, upgrades]);
-
-  const mineGold = () => {
+  const mineGold = (setGold: (gold: number) => void) => {
     setGold((prevGold) => prevGold + 1);
   };
 
-  const purchaseUpgrade = (index: number) => {
+  const purchaseUpgrade = (index: number, gold: number, setGold: (gold: number) => void) => {
     const upgrade = upgrades[index];
     if (gold >= upgrade.cost) {
       const updatedUpgrades = [...upgrades];
@@ -66,7 +43,6 @@ export const useGoldOreGame = (initialGold: number, initialUpgrades: Upgrade[], 
   };
 
   return {
-    gold,
     upgrades,
     passiveIncome,
     mineGold,
